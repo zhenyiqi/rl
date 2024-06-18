@@ -28,14 +28,16 @@ sys.path.insert(0, dirname(dirname(__file__)))
 # Also to mock PyTorch, because it is too large for the RTD server to download
 from unittest.mock import MagicMock
 
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
 
-MOCK_MODULES = ['mpi4py', 
-                'torch', 
-                'torch.optim', 
+class Mock(MagicMock):
+  @classmethod
+  def __getattr__(cls, name):
+    return MagicMock()
+
+
+MOCK_MODULES = ['mpi4py',
+                'torch',
+                'torch.optim',
                 'torch.nn',
                 'torch.distributions',
                 'torch.distributions.normal',
@@ -45,14 +47,11 @@ MOCK_MODULES = ['mpi4py',
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Finish imports
-import spinup
 from recommonmark.parser import CommonMarkParser
 
-
 source_parsers = {
-    '.md': CommonMarkParser,
+  '.md': CommonMarkParser,
 }
-
 
 # -- General configuration ------------------------------------------------
 
@@ -64,11 +63,11 @@ source_parsers = {
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.imgmath',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon']
+              'sphinx.ext.viewcode',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.napoleon']
 
-#'sphinx.ext.mathjax', ??
+# 'sphinx.ext.mathjax', ??
 
 # imgmath settings
 imgmath_image_format = 'svg'
@@ -113,11 +112,10 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'default' #'sphinx'
+pygments_style = 'default'  # 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
-
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -140,9 +138,9 @@ html_static_path = ['_static']
 
 html_logo = 'images/spinning-up-logo2.png'
 html_theme_options = {
-    'logo_only': True
+  'logo_only': True
 }
-#html_favicon = 'openai-favicon2_32x32.ico'
+# html_favicon = 'openai-favicon2_32x32.ico'
 html_favicon = 'openai_icon.ico'
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -177,17 +175,17 @@ imgmath_latex_preamble = r'''
 '''
 
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
+  # The paper size ('letterpaper' or 'a4paper').
+  #
+  # 'papersize': 'letterpaper',
 
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
+  # The font size ('10pt', '11pt' or '12pt').
+  #
+  # 'pointsize': '10pt',
 
-    # Additional stuff for the LaTeX preamble.
-    #
-    'preamble': r'''
+  # Additional stuff for the LaTeX preamble.
+  #
+  'preamble': r'''
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{amsmath}
@@ -201,29 +199,27 @@ latex_elements = {
 \newcommand{\Epi}[1]{\underset{\begin{subarray}{c}\tau \sim \pi \end{subarray}}{\E}\left[ #1 \right]}
 ''',
 
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+  # Latex figure (float) alignment
+  #
+  # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'SpinningUp.tex', 'Spinning Up Documentation',
-     'Joshua Achiam', 'manual'),
+  (master_doc, 'SpinningUp.tex', 'Spinning Up Documentation',
+   'Joshua Achiam', 'manual'),
 ]
-
 
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'spinningup', 'Spinning Up Documentation',
-     [author], 1)
+  (master_doc, 'spinningup', 'Spinning Up Documentation',
+   [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -231,11 +227,11 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'SpinningUp', 'Spinning Up Documentation',
-     author, 'SpinningUp', 'One line description of project.',
-     'Miscellaneous'),
+  (master_doc, 'SpinningUp', 'Spinning Up Documentation',
+   author, 'SpinningUp', 'One line description of project.',
+   'Miscellaneous'),
 ]
 
 
 def setup(app):
-    app.add_stylesheet('css/modify.css')
+  app.add_stylesheet('css/modify.css')
