@@ -4,24 +4,33 @@ from torch.distributions.categorical import Categorical
 from torch.optim import Adam
 import numpy as np
 import gym
-from gym.spaces import Discrete, Box
+from gym import spaces
+
 
 def mlp(sizes, activation=nn.Tanh, output_activation=nn.Identity):
+    """An MLP that represents a trainable policy."""
     # Build a feedforward neural network.
     layers = []
     for j in range(len(sizes)-1):
         act = activation if j < len(sizes)-2 else output_activation
-        layers += [nn.Linear(sizes[j], sizes[j+1]), act()]
+        input_dim, output_dim = sizes[j], sizes[j + 1]
+        layers += [nn.Linear(input_dim, output_dim), act()]
     return nn.Sequential(*layers)
 
-def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2, 
-          epochs=50, batch_size=5000, render=False):
+
+def train(*,
+          env_name='CartPole-v0',
+          hidden_sizes=[32],
+          lr=1e-2,
+          epochs=50,
+          batch_size=5000,
+          render=False):
 
     # make environment, check spaces, get obs / act dims
     env = gym.make(env_name)
-    assert isinstance(env.observation_space, Box), \
+    assert isinstance(env.observation_space, spaces.Box), \
         "This example only works for envs with continuous state spaces."
-    assert isinstance(env.action_space, Discrete), \
+    assert isinstance(env.action_space, spaces.Discrete), \
         "This example only works for envs with discrete action spaces."
 
     obs_dim = env.observation_space.shape[0]
@@ -32,17 +41,29 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
 
     # make function to compute action distribution
     def get_policy(obs):
+        """Return distribution of actions given states/observations."""
         logits = logits_net(obs)
         return Categorical(logits=logits)
 
     # make action selection function (outputs int actions, sampled from policy)
     def get_action(obs):
+        """Sample from the action distribution."""
         return get_policy(obs).sample().item()
 
     # make loss function whose gradient, for the right data, is policy gradient
     def compute_loss(obs, act, weights):
-        logp = get_policy(obs).log_prob(act)
-        return -(logp * weights).mean()
+        """Compute weighted negative log prob for an action.
+
+        Args:
+            obs: Observations/states from time 0, 1, ..., T.
+            act: Actions at time 0, 1, ..., T.
+            weights: In naive policy gradient, weight is the return of the
+             trajectory.
+        Returns:
+            The loss of a trajectory.
+        """
+        log_prob = get_policy(obs).log_prob(act)
+        return -(log_prob * weights).mean()
 
     # make optimizer
     optimizer = Adam(logits_net.parameters(), lr=lr)
@@ -80,16 +101,16 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
 
             # save action, reward
             batch_acts.append(act)
-            ep_rews.append(rew)
+            ep_rews.append(rew)  # immediate reward
 
             if done:
                 # if episode is over, record info about episode
-                ep_ret, ep_len = sum(ep_rews), len(ep_rews)
-                batch_rets.append(ep_ret)
-                batch_lens.append(ep_len)
+                episode_return, episode_length = sum(ep_rews), len(ep_rews)
+                batch_rets.append(episode_return)
+                batch_lens.append(episode_length)
 
                 # the weight for each logprob(a|s) is R(tau)
-                batch_weights += [ep_ret] * ep_len
+                batch_weights += [episode_return] * episode_length
 
                 # reset episode-specific variables
                 obs, done, ep_rews = env.reset(), False, []
@@ -114,8 +135,9 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
     # training loop
     for i in range(epochs):
         batch_loss, batch_rets, batch_lens = train_one_epoch()
-        print('epoch: %3d \t loss: %.3f \t return: %.3f \t ep_len: %.3f'%
+        print('epoch: %3d \t loss: %.3f \t return: %.3f \t episode_length: %.3f'%
                 (i, batch_loss, np.mean(batch_rets), np.mean(batch_lens)))
+
 
 if __name__ == '__main__':
     import argparse
@@ -125,4 +147,4 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-2)
     args = parser.parse_args()
     print('\nUsing simplest formulation of policy gradient.\n')
-    train(env_name=args.env_name, render=args.render, lr=args.lr)
+    train(env_name=args.env_name, render=args.render, lr=args.lr, epochs=2)
